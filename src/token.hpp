@@ -150,22 +150,37 @@ struct TokenConsumer {
     TokenConsumer(const std::forward_list<Token>& tokens, std::string_view origin)
         : tokens(tokens), origin(origin), it(tokens.begin()) {}
 
-    bool consume(std::string_view op) {
-        if (it->kind != TokenKind::Reserved || it->str != op) {
-            return false;
+    bool consume(std::string_view keyword) {
+        switch (it->kind) {
+        case TokenKind::Reserved:
+        case TokenKind::Return:
+            if (it->str == keyword) {
+                ++it;
+                return true;
+            }
+            break;
+        default:
+            break;
         }
-        ++it;
-        return true;
+        return false;
     }
 
-    void expect(std::string_view op) {
-        if (it->kind != TokenKind::Reserved || it->str != op) {
-            spdlog::error("Expected {}, but got {}", to_string(*it));
-            spdlog::error("{}", origin);
-            spdlog::error("{:>{}}^ Expected {}", "", it->loc, op);
-            std::exit(1);
+    void expect(std::string_view keyword) {
+        switch (it->kind) {
+        case TokenKind::Reserved:
+        case TokenKind::Return:
+            if (it->str == keyword) {
+                ++it;
+                return;
+            }
+            break;
+        default:
+            break;
         }
-        ++it;
+        spdlog::error("Expected {}, but got {}", keyword, to_string(*it));
+        spdlog::error("{}", origin);
+        spdlog::error("{:>{}}^ Expected {}", "", it->loc, keyword);
+        std::exit(1);
     }
 
     std::optional<int> consume_number() {
