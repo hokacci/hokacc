@@ -135,7 +135,7 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
         std::exit(1);
     }
 
-    it = tokens->insert_after(it, Token{TokenKind::EndOfFile, loc, 0, std::string_view()});
+    it = tokens->insert_after(it, Token{TokenKind::EndOfFile, loc + 1, 0, std::string_view()});
 
     // ダミーの先頭トークンを削除
     tokens->pop_front();
