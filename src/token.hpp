@@ -104,8 +104,14 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
             c += idx - 1;
             continue;
         }
-        if (std::islower(*c)) {
-            it = tokens->insert_after(it, Token{TokenKind::Identifier, loc, 0, std::string_view(c, 1)});
+        if (std::isalpha(*c)) {
+            auto* p = c + 1;
+            while (p != str.end() && (std::isalpha(*p) || std::isdigit(*p) || *p == '_')) {
+                ++p;
+            }
+            std::size_t idx = p - c;
+            it = tokens->insert_after(it, Token{TokenKind::Identifier, loc, 0, std::string_view(c, idx)});
+            c += idx - 1;
             continue;
         }
         spdlog::error("Failed to tokenize:");

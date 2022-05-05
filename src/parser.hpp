@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <forward_list>
 #include <memory>
 
@@ -55,7 +56,7 @@ struct Node {
     std::unique_ptr<Node> lhs = nullptr;
     std::unique_ptr<Node> rhs = nullptr;
     int val;  // for Num
-    int offset;  // for LVar
+    std::size_t offset;  // for LVar
 
     static std::unique_ptr<Node> new_number(int val) {
         auto node = std::make_unique<Node>();
@@ -91,9 +92,16 @@ inline std::string to_string(const Node& node) {
 }
 
 
+struct LVar {
+    std::string_view name;
+    std::size_t offset;
+};
+
+
 struct Parser {
     TokenConsumer consumer;
     std::vector<std::unique_ptr<Node>> code;
+    std::unordered_map<std::string_view, LVar> lvars;
 
     Parser(TokenConsumer consumer) : consumer(consumer) {
         program();
@@ -202,7 +210,14 @@ struct Parser {
             node = expr();
             consumer.expect(")");
         } else if (auto id = consumer.consume_identifier(); id){
-            node = Node::new_lvar((id.value().front() - 'a' + 1) * 8);
+            auto it = lvars.find(*id);
+            if (it == lvars.end()) {
+                std::size_t offset = (lvars.size() + 1) * 8;
+                lvars.insert({*id, {*id, offset}});
+                node = Node::new_lvar(offset);
+            } else {
+                node = Node::new_lvar(it->second.offset);
+            }
         } else {
             node = Node::new_number(consumer.expect_number());
         }
