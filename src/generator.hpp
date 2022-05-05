@@ -26,6 +26,12 @@ inline void generate_lvar(const Node& node) {
 
 inline void generate(const Node& node) {
     switch (node.kind) {
+    case NodeKind::Return:
+        fmt::print("\tpop rax\n");
+        fmt::print("\tmov rsp, rbp\n");
+        fmt::print("\tpop rbp\n");
+        fmt::print("\tret\n");
+        return;
     case NodeKind::Num:
         fmt::print("\tpush {}\n", node.val);
         return;
