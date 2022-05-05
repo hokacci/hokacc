@@ -107,7 +107,7 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
             continue;
         }
         if (std::isalpha(*c)) {
-            if (str.substr(loc, 6) == "return") {
+            if (str.substr(loc, 6) == "return" && !(std::isalpha(*(c + 6)) || std::isdigit(*(c + 6)) || *(c + 6) == '_')) {
                 it = tokens->insert_after(it, Token{TokenKind::Return, loc, 0, std::string_view(c, 6)});
                 c += 5;
                 continue;
