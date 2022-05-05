@@ -29,7 +29,9 @@ enum struct NodeKind {
 
     LVar,
 
-    Num
+    Num,
+
+    Return
 };
 
 
@@ -46,6 +48,7 @@ inline std::string to_string(NodeKind kind) {
     case NodeKind::Assign: return "Assign";
     case NodeKind::LVar: return "LVar";
     case NodeKind::Num: return "Num";
+    case NodeKind::Return: return "Return";
     default: return "Unknown";
     }
 }
