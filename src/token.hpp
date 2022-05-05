@@ -54,62 +54,69 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
     spdlog::debug("Tokenizing: {}", str);
 
     std::size_t loc = 0;
-    for (auto c = str.begin(); c != str.end(); ++c, loc = c - str.begin()) {
+    auto c = str.begin();
+    while (c != str.end()) {
+        loc = c - str.begin();
         if (std::isspace(*c)) {
+            ++c;
             continue;
         }
         if (*c == '!') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
                 it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
-                c = c + 1;
+                c = c + 2;
                 continue;
             }
         }
         if (*c == '=') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
                 it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
-                c = c + 1;
+                c = c + 2;
                 continue;
             } else {
                 it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+                ++c;
                 continue;
             }
         }
         if (*c == '<') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
                 it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
-                c = c + 1;
+                c = c + 2;
                 continue;
             } else {
                 it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+                ++c;
                 continue;
             }
         }
         if (*c == '>') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
                 it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
-                c = c + 1;
+                c = c + 2;
                 continue;
             } else {
                 it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+                ++c;
                 continue;
             }
         }
         if (*c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '(' || *c == ')' || *c == ';') {
             it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+            ++c;
             continue;
         }
         if (std::isdigit(*c)) {
             std::size_t idx;
             int n = std::stoi(c, &idx);
             it = tokens->insert_after(it, Token{TokenKind::Number, loc, n, std::string_view(c, idx)});
-            c += idx - 1;
+            c += idx;
             continue;
         }
         if (std::isalpha(*c)) {
             if (str.substr(loc, 6) == "return" && !(c + 6 != str.end() && (std::isalpha(*(c + 6)) || std::isdigit(*(c + 6)) || *(c + 6) == '_'))) {
                 it = tokens->insert_after(it, Token{TokenKind::Return, loc, 0, std::string_view(c, 6)});
-                c += 5;
+                c += 6;
                 continue;
             } else {
                 auto* p = c + 1;
@@ -118,7 +125,7 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
                 }
                 std::size_t idx = p - c;
                 it = tokens->insert_after(it, Token{TokenKind::Identifier, loc, 0, std::string_view(c, idx)});
-                c += idx - 1;
+                c += idx;
                 continue;
             }
         }
