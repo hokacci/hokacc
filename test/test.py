@@ -41,7 +41,7 @@ def main():
     assert(test("3 + 4 <= 8 + 4 != 0;", 1))
     assert(test("a = 1;", 1))
     assert(test("a = 102; b = 2; a;", 102))
-    assert(test("a = 1; b = 2; a + b == 3;", 1))
+    assert(test("aiko = 1; becky = 2; aiko + becky == 3;", 1))
     print("******** All tests passed! ********")
 
 
