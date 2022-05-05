@@ -76,6 +76,13 @@ struct Node {
         return node;
     }
 
+    static std::unique_ptr<Node> new_unary_op(NodeKind kind, std::unique_ptr<Node> lhs) {
+        auto node = std::make_unique<Node>();
+        node->kind = kind;
+        node->lhs = std::move(lhs);
+        return node;
+    }
+
     static std::unique_ptr<Node> new_lvar(int offset) {
         auto node = std::make_unique<Node>();
         node->kind = NodeKind::LVar;
@@ -122,8 +129,16 @@ struct Parser {
     }
 
     std::unique_ptr<Node> stmt() {
-        auto node = expr();
+        std::unique_ptr<Node> node;
+
+        if (consumer.consume("return")) {
+            node = Node::new_unary_op(NodeKind::Return, expr());
+        } else {
+            node = expr();
+        }
+
         consumer.expect(";");
+
         spdlog::debug("stmt: {}", to_string(*node));
         return node;
     }
