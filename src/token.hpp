@@ -15,6 +15,7 @@ enum struct TokenKind {
     Reserved,    // 記号
     Identifier,  // 識別子
     Number,      // 整数
+    Return,      // return
     EndOfFile    // EOF
 };
 
@@ -23,6 +24,7 @@ inline std::string to_string(TokenKind kind) {
     case TokenKind::Reserved: return "Reserved";
     case TokenKind::Identifier: return "Identifier";
     case TokenKind::Number: return "Number";
+    case TokenKind::Return: return "Return";
     case TokenKind::EndOfFile: return "EndOfFile";
     default: return "Unknown";
     }
@@ -105,14 +107,20 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
             continue;
         }
         if (std::isalpha(*c)) {
-            auto* p = c + 1;
-            while (p != str.end() && (std::isalpha(*p) || std::isdigit(*p) || *p == '_')) {
-                ++p;
+            if (str.substr(loc, 6) == "return") {
+                it = tokens->insert_after(it, Token{TokenKind::Return, loc, 0, std::string_view(c, 6)});
+                c += 5;
+                continue;
+            } else {
+                auto* p = c + 1;
+                while (p != str.end() && (std::isalpha(*p) || std::isdigit(*p) || *p == '_')) {
+                    ++p;
+                }
+                std::size_t idx = p - c;
+                it = tokens->insert_after(it, Token{TokenKind::Identifier, loc, 0, std::string_view(c, idx)});
+                c += idx - 1;
+                continue;
             }
-            std::size_t idx = p - c;
-            it = tokens->insert_after(it, Token{TokenKind::Identifier, loc, 0, std::string_view(c, idx)});
-            c += idx - 1;
-            continue;
         }
         spdlog::error("Failed to tokenize:");
         spdlog::error("{}", str);
