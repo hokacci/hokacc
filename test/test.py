@@ -43,6 +43,8 @@ def main():
     assert(test("a = 102; b = 2; a;", 102))
     assert(test("aiko = 1; becky = 2; aiko + becky == 3;", 1))
     assert(test("S_var = 25; t__123=22; S_var + t__123;", 47))
+    assert(test("return 12;", 12))
+    assert(test("S_var = 25; t__123=22; return S_var + t__123; 12;", 47))
     print("******** All tests passed! ********")
 
 
