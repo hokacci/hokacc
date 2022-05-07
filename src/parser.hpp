@@ -131,13 +131,13 @@ struct Parser {
     std::unique_ptr<Node> stmt() {
         std::unique_ptr<Node> node;
 
-        if (consumer.consume("return")) {
+        if (consumer.consume(TokenKind::Return)) {
             node = Node::new_unary_op(NodeKind::Return, expr());
         } else {
             node = expr();
         }
 
-        consumer.expect(";");
+        consumer.expect(TokenKind::SemiColon);
 
         spdlog::debug("stmt: {}", to_string(*node));
         return node;
@@ -151,7 +151,7 @@ struct Parser {
 
     std::unique_ptr<Node> assign() {
         auto node = equality();
-        if (consumer.consume("=")) {
+        if (consumer.consume(TokenKind::Assign)) {
             node = Node::new_binary_op(NodeKind::Assign, std::move(node), assign());
         }
         spdlog::debug("assign: {}", to_string(*node));
@@ -161,9 +161,9 @@ struct Parser {
     std::unique_ptr<Node> equality() {
         auto node = relational();
         for (;;) {
-            if (consumer.consume("==")) {
+            if (consumer.consume(TokenKind::Equal)) {
                 node = Node::new_binary_op(NodeKind::Equal, std::move(node), relational());
-            } else if (consumer.consume("!=")) {
+            } else if (consumer.consume(TokenKind::NotEqual)) {
                 node = Node::new_binary_op(NodeKind::NotEqual, std::move(node), relational());
             } else {
                 break;
@@ -176,13 +176,13 @@ struct Parser {
     std::unique_ptr<Node> relational() {
         auto node = add();
         for (;;) {
-            if (consumer.consume("<")) {
+            if (consumer.consume(TokenKind::Less)) {
                 node = Node::new_binary_op(NodeKind::Less, std::move(node), add());
-            } else if (consumer.consume("<=")) {
+            } else if (consumer.consume(TokenKind::LessEqual)) {
                 node = Node::new_binary_op(NodeKind::LessEqual, std::move(node), add());
-            } else if (consumer.consume(">")) {
+            } else if (consumer.consume(TokenKind::Greater)) {
                 node = Node::new_binary_op(NodeKind::Less, add(), std::move(node));
-            } else if (consumer.consume(">=")) {
+            } else if (consumer.consume(TokenKind::GreaterEqual)) {
                 node = Node::new_binary_op(NodeKind::LessEqual, add(), std::move(node));
             } else {
                 break;
@@ -195,9 +195,9 @@ struct Parser {
     std::unique_ptr<Node> add() {
         auto node = mul();
         for (;;) {
-            if (consumer.consume("+")) {
+            if (consumer.consume(TokenKind::Plus)) {
                 node = Node::new_binary_op(NodeKind::Add, std::move(node), mul());
-            } else if (consumer.consume("-")) {
+            } else if (consumer.consume(TokenKind::Minus)) {
                 node = Node::new_binary_op(NodeKind::Sub, std::move(node), mul());
             } else {
                 break;
@@ -210,9 +210,9 @@ struct Parser {
     std::unique_ptr<Node> mul() {
         auto node = unary();
         for (;;) {
-            if (consumer.consume("*")) {
+            if (consumer.consume(TokenKind::Star)) {
                 node = Node::new_binary_op(NodeKind::Mul, std::move(node), unary());
-            } else if (consumer.consume("/")) {
+            } else if (consumer.consume(TokenKind::Slash)) {
                 node = Node::new_binary_op(NodeKind::Div, std::move(node), unary());
             } else {
                 break;
@@ -224,9 +224,9 @@ struct Parser {
 
     std::unique_ptr<Node> primary() {
         std::unique_ptr<Node> node = nullptr;
-        if (consumer.consume("(")) {
+        if (consumer.consume(TokenKind::LParen)) {
             node = expr();
-            consumer.expect(")");
+            consumer.expect(TokenKind::RParen);
         } else if (auto id = consumer.consume_identifier(); id){
             auto it = lvars.find(*id);
             if (it == lvars.end()) {
@@ -246,9 +246,9 @@ struct Parser {
 
     std::unique_ptr<Node> unary() {
         std::unique_ptr<Node> node;
-        if (consumer.consume("+")) {
+        if (consumer.consume(TokenKind::Plus)) {
             node = primary();
-        } else if (consumer.consume("-")) {
+        } else if (consumer.consume(TokenKind::Minus)) {
             node = Node::new_binary_op(NodeKind::Sub, Node::new_number(0), primary());
         } else {
             node = primary();

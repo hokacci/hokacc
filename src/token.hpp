@@ -12,19 +12,71 @@
 namespace yhok::hokacc {
 
 enum struct TokenKind {
-    Reserved,    // 記号
+    // Reserved
+    LParen,
+    RParen,
+    Assign,
+    Equal,
+    NotEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+    SemiColon,
+    Plus,
+    Minus,
+    Slash,
+    Star,
+    Return,      // return
+
     Identifier,  // 識別子
     Number,      // 整数
-    Return,      // return
     EndOfFile    // EOF
 };
 
 inline std::string to_string(TokenKind kind) {
     switch (kind) {
-    case TokenKind::Reserved: return "Reserved";
+    case TokenKind::LParen: return "LParen";
+    case TokenKind::RParen: return "RParen";
+    case TokenKind::Assign: return "Assign";
+    case TokenKind::Equal: return "Equal";
+    case TokenKind::NotEqual: return "NotEqual";
+    case TokenKind::Less: return "Less";
+    case TokenKind::LessEqual: return "LessEqual";
+    case TokenKind::Greater: return "Greater";
+    case TokenKind::GreaterEqual: return "GreaterEqual";
+    case TokenKind::SemiColon: return "SemiColon";
+    case TokenKind::Plus: return "Plus";
+    case TokenKind::Minus: return "Minus";
+    case TokenKind::Slash: return "Slash";
+    case TokenKind::Star: return "Star";
+    case TokenKind::Return: return "Return";
     case TokenKind::Identifier: return "Identifier";
     case TokenKind::Number: return "Number";
-    case TokenKind::Return: return "Return";
+    case TokenKind::EndOfFile: return "EndOfFile";
+    default: return "Unknown";
+    }
+}
+
+inline std::string to_literal_string(TokenKind kind) {
+    switch (kind) {
+    case TokenKind::LParen: return "(";
+    case TokenKind::RParen: return ")";
+    case TokenKind::Assign: return "=";
+    case TokenKind::Equal: return "==";
+    case TokenKind::NotEqual: return "!=";
+    case TokenKind::Less: return "<";
+    case TokenKind::LessEqual: return "<=";
+    case TokenKind::Greater: return ">";
+    case TokenKind::GreaterEqual: return ">=";
+    case TokenKind::SemiColon: return ";";
+    case TokenKind::Plus: return "+";
+    case TokenKind::Minus: return "-";
+    case TokenKind::Slash: return "/";
+    case TokenKind::Star: return "*";
+    case TokenKind::Return: return "return";
+    case TokenKind::Identifier: return "Identifier";
+    case TokenKind::Number: return "Number";
     case TokenKind::EndOfFile: return "EndOfFile";
     default: return "Unknown";
     }
@@ -63,49 +115,80 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
         }
         if (*c == '!') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
-                it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
+                it = tokens->insert_after(it, Token{TokenKind::NotEqual, loc, 0, std::string_view(c, 2)});
                 c = c + 2;
                 continue;
             }
         }
         if (*c == '=') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
-                it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
+                it = tokens->insert_after(it, Token{TokenKind::Equal, loc, 0, std::string_view(c, 2)});
                 c = c + 2;
                 continue;
             } else {
-                it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+                it = tokens->insert_after(it, Token{TokenKind::Assign, loc, 0, std::string_view(c, 1)});
                 ++c;
                 continue;
             }
         }
         if (*c == '<') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
-                it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
+                it = tokens->insert_after(it, Token{TokenKind::LessEqual, loc, 0, std::string_view(c, 2)});
                 c = c + 2;
                 continue;
             } else {
-                it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+                it = tokens->insert_after(it, Token{TokenKind::Less, loc, 0, std::string_view(c, 1)});
                 ++c;
                 continue;
             }
         }
         if (*c == '>') {
             if ((c + 1) != str.end() && *(c + 1) == '=') {
-                it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 2)});
+                it = tokens->insert_after(it, Token{TokenKind::GreaterEqual, loc, 0, std::string_view(c, 2)});
                 c = c + 2;
                 continue;
             } else {
-                it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+                it = tokens->insert_after(it, Token{TokenKind::Greater, loc, 0, std::string_view(c, 1)});
                 ++c;
                 continue;
             }
         }
-        if (*c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '(' || *c == ')' || *c == ';') {
-            it = tokens->insert_after(it, Token{TokenKind::Reserved, loc, 0, std::string_view(c, 1)});
+        if (*c == '+') {
+            it = tokens->insert_after(it, Token{TokenKind::Plus, loc, 0, std::string_view(c, 1)});
             ++c;
             continue;
         }
+        if (*c == '-') {
+            it = tokens->insert_after(it, Token{TokenKind::Minus, loc, 0, std::string_view(c, 1)});
+            ++c;
+            continue;
+        }
+        if (*c == '/') {
+            it = tokens->insert_after(it, Token{TokenKind::Slash, loc, 0, std::string_view(c, 1)});
+            ++c;
+            continue;
+        }
+        if (*c == '*') {
+            it = tokens->insert_after(it, Token{TokenKind::Star, loc, 0, std::string_view(c, 1)});
+            ++c;
+            continue;
+        }
+        if (*c == ';') {
+            it = tokens->insert_after(it, Token{TokenKind::SemiColon, loc, 0, std::string_view(c, 1)});
+            ++c;
+            continue;
+        }
+        if (*c == '(') {
+            it = tokens->insert_after(it, Token{TokenKind::LParen, loc, 0, std::string_view(c, 1)});
+            ++c;
+            continue;
+        }
+        if (*c == ')') {
+            it = tokens->insert_after(it, Token{TokenKind::RParen, loc, 0, std::string_view(c, 1)});
+            ++c;
+            continue;
+        }
+
         if (std::isdigit(*c)) {
             std::size_t idx;
             int n = std::stoi(c, &idx);
@@ -157,37 +240,23 @@ struct TokenConsumer {
     TokenConsumer(const std::forward_list<Token>& tokens, std::string_view origin)
         : tokens(tokens), origin(origin), it(tokens.begin()) {}
 
-    bool consume(std::string_view keyword) {
-        switch (it->kind) {
-        case TokenKind::Reserved:
-        case TokenKind::Return:
-            if (it->str == keyword) {
-                ++it;
-                return true;
-            }
-            break;
-        default:
-            break;
+    bool consume(TokenKind kind) {
+        if (it->kind != kind) {
+            return false;
         }
-        return false;
+        ++it;
+        return true;
     }
 
-    void expect(std::string_view keyword) {
-        switch (it->kind) {
-        case TokenKind::Reserved:
-        case TokenKind::Return:
-            if (it->str == keyword) {
-                ++it;
-                return;
-            }
-            break;
-        default:
-            break;
+    void expect(TokenKind kind) {
+        if (it->kind != kind) {
+            auto keyword = to_literal_string(kind);
+            spdlog::error("Expected {}, but got {}", keyword, to_string(*it));
+            spdlog::error("{}", origin);
+            spdlog::error("{:>{}}^ Expected {}", "", it->loc, keyword);
+            std::exit(1);
         }
-        spdlog::error("Expected {}, but got {}", keyword, to_string(*it));
-        spdlog::error("{}", origin);
-        spdlog::error("{:>{}}^ Expected {}", "", it->loc, keyword);
-        std::exit(1);
+        ++it;
     }
 
     std::optional<int> consume_number() {
