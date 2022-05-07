@@ -218,7 +218,8 @@ inline std::unique_ptr<std::forward_list<Token>> tokenize(std::string_view str) 
         std::exit(1);
     }
 
-    it = tokens->insert_after(it, Token{TokenKind::EndOfFile, loc + 1, 0, std::string_view()});
+    loc = c - str.begin();
+    it = tokens->insert_after(it, Token{TokenKind::EndOfFile, loc, 0, std::string_view(" ")});
 
     // ダミーの先頭トークンを削除
     tokens->pop_front();
@@ -253,7 +254,7 @@ struct TokenConsumer {
             auto keyword = to_literal_string(kind);
             spdlog::error("Expected {}, but got {}", keyword, to_string(*it));
             spdlog::error("{}", origin);
-            spdlog::error("{:>{}}^ Expected {}", "", it->loc, keyword);
+            spdlog::error("{:>{}}^{:~>{}} Expected {}", "", it->loc, "", it->str.size() - 1, keyword);
             std::exit(1);
         }
         ++it;
@@ -272,7 +273,7 @@ struct TokenConsumer {
         if (it->kind != TokenKind::Number) {
             spdlog::error("Expected number, but got {}", to_string(*it));
             spdlog::error("{}", origin);
-            spdlog::error("{:>{}}^ Expected number", "", it->loc);
+            spdlog::error("{:>{}}^{:~>{}} Expected number", "", it->loc, "", it->str.size() - 1);
             std::exit(1);
         }
         int val = it->value;
@@ -293,7 +294,7 @@ struct TokenConsumer {
         if (it->kind != TokenKind::Identifier) {
             spdlog::error("Expected identifier, but got {}", to_string(*it));
             spdlog::error("{}", origin);
-            spdlog::error("{:>{}}^ Expected identifier", "", it->loc);
+            spdlog::error("{:>{}}^{:~>{}} Expected identifier", "", it->loc, "", it->str.size() - 1);
             std::exit(1);
         }
         std::string_view val = it->str;
